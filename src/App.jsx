@@ -36,10 +36,10 @@ export default function App() {
   useEffect(() => {
     const savedTheme = localStorage.getItem('theme') || 'dark';
     const root = window.document.documentElement;
-    if (savedTheme === 'light') {
-      root.classList.add('light');
+    if (savedTheme === 'dark') {
+      root.classList.add('dark');
     } else {
-      root.classList.remove('light');
+      root.classList.remove('dark');
     }
   }, []);
 
