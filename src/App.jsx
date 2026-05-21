@@ -7,7 +7,8 @@ import {
   Bookmark,
   GitBranch,
   Search,
-  Code
+  Code,
+  ChevronRight
 } from 'lucide-react';
 import ThemeToggle from './components/ThemeToggle';
 import SearchInput from './components/SearchInput';
@@ -32,26 +33,23 @@ export default function App() {
     }
   });
 
-  // Initialize theme DOM on mount (no setState in effect)
   useEffect(() => {
     const savedTheme = localStorage.getItem('theme') || 'dark';
     const root = window.document.documentElement;
-    if (savedTheme === 'light') {
-      root.classList.add('light');
+    if (savedTheme === 'dark') {
+      root.classList.add('dark');
     } else {
-      root.classList.remove('light');
+      root.classList.remove('dark');
     }
   }, []);
 
 
-  // Main search function
   const handleSearch = async (username) => {
     if (!username) return;
     setIsLoading(true);
     setError(null);
 
     try {
-      // 1. Fetch Profile
       const profileRes = await fetch(`https://api.github.com/users/${username}`);
       
       if (!profileRes.ok) {
@@ -66,18 +64,15 @@ export default function App() {
       
       const profileData = await profileRes.intoJSON ? await profileRes.intoJSON() : await profileRes.json();
 
-      // 2. Fetch Repositories (up to 100, sorted by updated)
       const reposRes = await fetch(`https://api.github.com/users/${username}/repos?per_page=100&sort=updated`);
       let reposData = [];
       if (reposRes.ok) {
         reposData = await reposRes.json();
       }
 
-      // Update state
       setProfile(profileData);
       setRepos(reposData);
 
-      // Save to history (case-insensitive deduplication, limit to last 5)
       updateHistory(profileData.login);
 
     } catch (err) {
@@ -101,7 +96,6 @@ export default function App() {
           message: 'Unable to connect to the GitHub API. Please check your internet connection and try again.'
         });
       }
-      // Reset profile/repos on error
       setProfile(null);
       setRepos(null);
     } finally {
@@ -109,173 +103,171 @@ export default function App() {
     }
   };
 
-  // Helper to update search history list
   const updateHistory = (username) => {
     const normUser = username.trim();
-    // Filter out if already in history
     const filtered = history.filter(u => u.toLowerCase() !== normUser.toLowerCase());
-    // Put to the top of list
     const updated = [normUser, ...filtered].slice(0, 5);
     setHistory(updated);
     localStorage.setItem('searchHistory', JSON.stringify(updated));
   };
 
-  // Remove individual history item
   const handleRemoveHistoryItem = (username) => {
     const updated = history.filter((u) => u !== username);
     setHistory(updated);
     localStorage.setItem('searchHistory', JSON.stringify(updated));
   };
 
-  // Clear all history items
   const handleClearHistory = () => {
     setHistory([]);
     localStorage.removeItem('searchHistory');
   };
 
   return (
-    <div className="min-h-screen py-8 px-4 md:py-12 md:px-8 max-w-4xl mx-auto flex flex-col gap-8 transition-colors duration-300">
+    <div className="min-h-screen flex flex-col transition-colors duration-300">
       
-      {/* Top Header Section */}
-      <header className="flex justify-between items-center w-full animate-[fadeIn_0.4s_ease-out]">
-        <div className="flex items-center gap-3">
-          <div className="p-3 bg-gradient-to-tr from-indigo-500 to-purple-600 rounded-2xl shadow-md text-white">
-            <Github className="w-6 h-6" />
+      {/* Fixed Header Navigation */}
+      <header className="fixed top-0 left-0 right-0 z-40 h-16 border-b border-stone-200 dark:border-white/10 bg-stone-50/80 dark:bg-stone-950/80 backdrop-blur-md">
+        <div className="max-w-6xl mx-auto px-6 h-full flex justify-between items-center">
+          <div className="flex items-center gap-2.5">
+            <div className="p-2 bg-lime-400 rounded-md text-stone-950 relative">
+              <Github className="w-5 h-5" />
+              <span className="absolute -bottom-0.5 -right-0.5 h-1.5 w-1.5 bg-lime-400"></span>
+            </div>
+            <div>
+              <h1 className="text-sm font-bold tracking-tight text-stone-900 dark:text-stone-50">
+                GitScope
+              </h1>
+              <p className="text-[9px] font-mono uppercase tracking-widest text-stone-500 dark:text-stone-400">
+                Profile Analyzer
+              </p>
+            </div>
           </div>
-          <div>
-            <h1 className="text-2xl font-black tracking-tight bg-gradient-to-r from-indigo-400 via-purple-400 to-indigo-500 dark:from-indigo-300 dark:via-purple-300 dark:to-indigo-400 bg-clip-text text-transparent">
-              GitScope
-            </h1>
-            <p className="text-[10px] md:text-xs font-bold text-slate-500 uppercase tracking-widest mt-0.5">
-              GitHub Profile Analyzer
-            </p>
-          </div>
-        </div>
 
-        {/* Theme Toggle Button */}
-        <ThemeToggle theme={theme} setTheme={setTheme} />
+          <ThemeToggle theme={theme} setTheme={setTheme} />
+        </div>
       </header>
 
-      {/* Search Input Box */}
-      <SearchInput
-        onSearch={handleSearch}
-        history={history}
-        onRemoveHistoryItem={handleRemoveHistoryItem}
-        onClearHistory={handleClearHistory}
-        isLoading={isLoading}
-      />
+      {/* Main Content */}
+      <main className="flex-1 pt-16">
+        <div className="py-12 px-4 md:px-8 max-w-6xl mx-auto flex flex-col gap-8">
+          
+          {/* Search Section */}
+          <div className="animate-[fadeIn_0.4s_ease-out]">
+            <SearchInput
+              onSearch={handleSearch}
+              history={history}
+              onRemoveHistoryItem={handleRemoveHistoryItem}
+              onClearHistory={handleClearHistory}
+              isLoading={isLoading}
+            />
+          </div>
 
-      {/* Main Results / Loading / Errors Container */}
-      <main className="w-full flex flex-col gap-8">
-        {isLoading && <SkeletonLoader />}
+          {/* Results Container */}
+          <div className="w-full flex flex-col gap-8">
+            {isLoading && <SkeletonLoader />}
 
-        {!isLoading && error && (
-          <div className="w-full glass-panel rounded-3xl p-8 flex flex-col items-center justify-center text-center animate-[slideUp_0.5s_ease-out] shadow-xl border border-red-500/10 dark:border-red-500/15 relative overflow-hidden">
+            {!isLoading && error && (
+              <div className="w-full rounded-2xl p-8 flex flex-col items-center justify-center text-center animate-[slideUp_0.5s_ease-out] shadow-sm border border-red-500/20 dark:border-red-500/15 bg-stone-50/60 dark:bg-stone-950/40 relative overflow-hidden">
 
-            {/* Error background subtle glow */}
-            <div className="absolute -top-20 w-40 h-40 rounded-full bg-red-500/5 blur-3xl pointer-events-none"></div>
+                <div className="absolute -top-20 w-40 h-40 rounded-full bg-red-500/5 blur-3xl pointer-events-none"></div>
 
-            <div className="p-4 rounded-full bg-red-500/10 text-red-400 mb-4 animate-bounce">
-              {error.type === 'RATE_LIMIT' ? (
-                <ShieldAlert className="w-8 h-8" />
-              ) : (
-                <AlertCircle className="w-8 h-8" />
-              )}
-            </div>
-            
-            <h3 className="text-xl font-bold text-slate-100">{error.title}</h3>
-            <p className="text-sm text-slate-400 mt-2 max-w-md leading-relaxed">
-              {error.message}
-            </p>
-            
-            {error.type === 'RATE_LIMIT' && (
-              <div className="mt-5 text-xs text-indigo-400 font-semibold px-4 py-2 rounded-xl bg-indigo-500/10 border border-indigo-500/15 flex items-center gap-1.5">
-                <Code className="w-4 h-4" />
-                <span>Tip: Rate limits reset hourly.</span>
+                <div className="p-4 rounded-full bg-red-500/10 text-red-500 dark:text-red-400 mb-4">
+                  {error.type === 'RATE_LIMIT' ? (
+                    <ShieldAlert className="w-8 h-8" />
+                  ) : (
+                    <AlertCircle className="w-8 h-8" />
+                  )}
+                </div>
+                
+                <h3 className="text-lg font-bold text-stone-900 dark:text-stone-50">{error.title}</h3>
+                <p className="text-sm text-stone-600 dark:text-stone-400 mt-2 max-w-md leading-relaxed">
+                  {error.message}
+                </p>
+                
+                {error.type === 'RATE_LIMIT' && (
+                  <div className="mt-5 text-xs text-lime-700 dark:text-lime-400 font-semibold px-4 py-2 rounded-lg bg-lime-400/10 border border-lime-400/20 flex items-center gap-1.5">
+                    <Code className="w-4 h-4" />
+                    <span>Tip: Rate limits reset hourly.</span>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {!isLoading && !error && profile && (
+              <div className="flex flex-col gap-8">
+                <ProfileDetails profile={profile} />
+
+                <div className="w-full flex flex-col gap-3">
+                  <SectionTitle
+                    icon={GitBranch}
+                    title="Languages"
+                    subtitle="Most-used technologies"
+                  />
+                  <LanguageBreakdown repos={repos} />
+                </div>
+
+                <div className="w-full flex flex-col gap-4">
+                  <SectionTitle
+                    icon={GitBranch}
+                    title="Repositories"
+                    subtitle={`${profile.public_repos} total repositories`}
+                  />
+                  <RepositoryList repos={repos} />
+                </div>
+              </div>
+            )}
+
+            {!isLoading && !error && !profile && (
+              <div className="w-full rounded-2xl p-8 md:p-16 text-center flex flex-col items-center justify-center animate-[slideUp_0.6s_ease-out] shadow-sm relative overflow-hidden border border-stone-200 dark:border-white/5 bg-stone-50/40 dark:bg-stone-950/20">
+                
+                <div className="relative p-5 rounded-2xl bg-lime-400/10 border border-lime-400/20 text-lime-700 dark:text-lime-400 mb-6">
+                  <Sparkles className="w-10 h-10" />
+                </div>
+
+                <h2 className="text-3xl md:text-4xl font-bold text-stone-900 dark:text-stone-50 leading-tight">
+                  Analyze GitHub Profiles
+                </h2>
+                
+                <p className="text-sm md:text-base text-stone-600 dark:text-stone-400 mt-4 max-w-xl leading-relaxed">
+                  Search any GitHub username to instantly inspect their profile metrics, popular repositories, language breakdown, and more.
+                </p>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 w-full max-w-2xl mt-12">
+                  <div className="rounded-xl p-5 flex flex-col items-center gap-3 bg-stone-100/50 dark:bg-stone-900/30 border border-stone-200 dark:border-white/5">
+                    <div className="p-2.5 rounded-lg bg-lime-400/15 border border-lime-400/30 text-lime-700 dark:text-lime-400">
+                      <Search className="w-5 h-5" />
+                    </div>
+                    <h4 className="text-xs font-bold text-stone-900 dark:text-stone-50 uppercase tracking-wide">Search Profile</h4>
+                    <p className="text-[11px] text-stone-600 dark:text-stone-400">Query any username in seconds.</p>
+                  </div>
+
+                  <div className="rounded-xl p-5 flex flex-col items-center gap-3 bg-stone-100/50 dark:bg-stone-900/30 border border-stone-200 dark:border-white/5">
+                    <div className="p-2.5 rounded-lg bg-lime-400/15 border border-lime-400/30 text-lime-700 dark:text-lime-400">
+                      <Code className="w-5 h-5" />
+                    </div>
+                    <h4 className="text-xs font-bold text-stone-900 dark:text-stone-50 uppercase tracking-wide">Analyze Languages</h4>
+                    <p className="text-[11px] text-stone-600 dark:text-stone-400">See their tech stacks instantly.</p>
+                  </div>
+
+                  <div className="rounded-xl p-5 flex flex-col items-center gap-3 bg-stone-100/50 dark:bg-stone-900/30 border border-stone-200 dark:border-white/5">
+                    <div className="p-2.5 rounded-lg bg-lime-400/15 border border-lime-400/30 text-lime-700 dark:text-lime-400">
+                      <Bookmark className="w-5 h-5" />
+                    </div>
+                    <h4 className="text-xs font-bold text-stone-900 dark:text-stone-50 uppercase tracking-wide">Save History</h4>
+                    <p className="text-[11px] text-stone-600 dark:text-stone-400">Quick access to past searches.</p>
+                  </div>
+                </div>
               </div>
             )}
           </div>
-        )}
-
-        {!isLoading && !error && profile && (
-          <div className="flex flex-col gap-8">
-            {/* 1. Profile Core Card */}
-            <ProfileDetails profile={profile} />
-
-
-            {/* 2. Insights panel */}
-            <div className="w-full flex flex-col gap-3">
-              <SectionTitle
-                icon={GitBranch}
-                title="Insights"
-                subtitle="Most-used languages & repo signals"
-              />
-              <LanguageBreakdown repos={repos} />
-            </div>
-
-            {/* 3. Repository Sorting/Filtering/Listing */}
-            <div className="w-full flex flex-col gap-4">
-              <h3 className="text-lg font-black text-slate-100 flex items-center gap-2 px-1">
-                <GitBranch className="w-5 h-5 text-indigo-400" />
-                Repositories ({profile.public_repos})
-              </h3>
-              <RepositoryList repos={repos} />
-            </div>
-          </div>
-        )}
-
-        {/* Dynamic Welcome Landing Page (When no search has been made yet) */}
-        {!isLoading && !error && !profile && (
-          <div className="w-full glass-panel rounded-3xl p-8 md:p-12 text-center flex flex-col items-center justify-center animate-[slideUp_0.6s_ease-out] shadow-xl relative overflow-hidden">
-            {/* Visual ambient glows */}
-            <div className="absolute -top-32 -left-32 w-64 h-64 rounded-full bg-indigo-500/5 blur-3xl pointer-events-none"></div>
-            <div className="absolute -bottom-32 -right-32 w-64 h-64 rounded-full bg-purple-500/5 blur-3xl pointer-events-none"></div>
-
-            <div className="relative p-5 rounded-3xl bg-gradient-to-tr from-indigo-500/15 to-purple-500/15 text-indigo-400 mb-6 border border-indigo-500/10 shadow-inner group">
-              <div className="absolute -inset-1 rounded-3xl bg-gradient-to-r from-indigo-500 to-purple-500 opacity-20 blur-md group-hover:opacity-40 transition"></div>
-              <Sparkles className="relative w-10 h-10 animate-pulse" />
-            </div>
-
-            <h2 className="text-2xl md:text-3xl font-black text-slate-100 leading-tight">
-              Analyze GitHub Profiles Instantly
-            </h2>
-            
-            <p className="text-sm md:text-base text-slate-400 mt-3 max-w-lg leading-relaxed">
-              Enter any developer's GitHub username above to instantly inspect their account creation metrics, popular repository breakdown, languages analytics, and contact channels.
-            </p>
-
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 w-full max-w-2xl mt-10">
-              <div className="glass-card rounded-2xl p-4 flex flex-col items-center gap-2">
-                <div className="p-2 rounded-xl bg-indigo-500/10 text-indigo-400">
-                  <Search className="w-5 h-5" />
-                </div>
-                <h4 className="text-xs font-bold text-slate-200 uppercase tracking-wide">1. Search Profile</h4>
-                <p className="text-[11px] text-slate-500">Query any username in seconds.</p>
-              </div>
-
-              <div className="glass-card rounded-2xl p-4 flex flex-col items-center gap-2">
-                <div className="p-2 rounded-xl bg-purple-500/10 text-purple-400">
-                  <Code className="w-5 h-5" />
-                </div>
-                <h4 className="text-xs font-bold text-slate-200 uppercase tracking-wide">2. Parse Languages</h4>
-                <p className="text-[11px] text-slate-500">Analyze the tech stacks they write.</p>
-              </div>
-
-              <div className="glass-card rounded-2xl p-4 flex flex-col items-center gap-2">
-                <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-400">
-                  <Bookmark className="w-5 h-5" />
-                </div>
-                <h4 className="text-xs font-bold text-slate-200 uppercase tracking-wide">3. Save History</h4>
-                <p className="text-[11px] text-slate-500">Track and jump back to past searches.</p>
-              </div>
-            </div>
-          </div>
-        )}
+        </div>
       </main>
 
       {/* Footer */}
-      <footer className="w-full text-center py-6 border-t border-slate-800/10 dark:border-slate-800/20 mt-8 text-xs text-slate-500 font-medium">
-        <p>Built with React &bull; Tailwind CSS v4 &bull; GitHub REST API</p>
+      <footer className="border-t border-stone-200 dark:border-white/10 py-6 px-4 md:px-8 bg-stone-50/50 dark:bg-stone-950/50">
+        <div className="max-w-6xl mx-auto text-center text-xs text-stone-600 dark:text-stone-400 font-medium">
+          <p>Built with React • Tailwind CSS • GitHub REST API</p>
+        </div>
       </footer>
     </div>
   );
