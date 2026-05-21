@@ -1,15 +1,15 @@
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
 @import "tailwindcss";
 
 @theme {
-  --font-sans: "Plus Jakarta Sans", "Outfit", system-ui, -apple-system, sans-serif;
-  --font-heading: "Outfit", system-ui, -apple-system, sans-serif;
-  
+  --font-sans: "Inter", system-ui, -apple-system, sans-serif;
+  --font-heading: "Inter", system-ui, -apple-system, sans-serif;
+
   --animate-shimmer: shimmer 2.5s infinite linear;
   --animate-fade-in: fadeIn 0.4s ease-out forwards;
   --animate-slide-up: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  
+
   @keyframes shimmer {
     0% { background-position: -200% 0; }
     100% { background-position: 200% 0; }
@@ -25,51 +25,51 @@
 }
 
 :root {
-  /* Dark Theme (Default) */
-  --bg-gradient-start: #090d1a;
-  --bg-gradient-end: #02040a;
-  
-  --glass-bg: rgba(10, 16, 32, 0.5);
-  --glass-border: rgba(255, 255, 255, 0.08);
-  --glass-shadow: rgba(0, 0, 0, 0.4);
-  
-  --glass-card-bg: rgba(17, 25, 48, 0.4);
-  --glass-card-border: rgba(255, 255, 255, 0.05);
-  
-  --text-primary: #f8fafc;
-  --text-secondary: #94a3b8;
-  --text-muted: #64748b;
-  
-  --accent-primary: #6366f1; /* Indigo */
-  --accent-secondary: #a855f7; /* Purple */
-  --accent-glow: rgba(99, 102, 241, 0.15);
+  /* Dark Theme (Default) - Stone Palette */
+  --bg-gradient-start: #0c0a09;
+  --bg-gradient-end: #0c0a09;
+
+  --glass-bg: rgba(23, 23, 23, 0.5);
+  --glass-border: rgba(255, 255, 255, 0.05);
+  --glass-shadow: rgba(0, 0, 0, 0.3);
+
+  --glass-card-bg: rgba(28, 25, 23, 0.6);
+  --glass-card-border: rgba(255, 255, 255, 0.04);
+
+  --text-primary: #f5f5f4;
+  --text-secondary: #a8a29e;
+  --text-muted: #78716f;
+
+  --accent-primary: #a3e635; /* Lime */
+  --accent-secondary: #84cc16; /* Lime-600 */
+  --accent-glow: rgba(163, 230, 53, 0.15);
 }
 
 :root.light {
-  /* Light Theme */
-  --bg-gradient-start: #f1f5f9;
-  --bg-gradient-end: #cbd5e1;
-  
-  --glass-bg: rgba(255, 255, 255, 0.55);
-  --glass-border: rgba(15, 23, 42, 0.08);
-  --glass-shadow: rgba(148, 163, 184, 0.2);
-  
-  --glass-card-bg: rgba(255, 255, 255, 0.7);
-  --glass-card-border: rgba(15, 23, 42, 0.05);
-  
-  --text-primary: #0f172a;
-  --text-secondary: #475569;
-  --text-muted: #64748b;
-  
-  --accent-primary: #4f46e5; /* Indigo */
-  --accent-secondary: #9333ea; /* Purple */
-  --accent-glow: rgba(79, 70, 229, 0.08);
+  /* Light Theme - Stone Palette */
+  --bg-gradient-start: #fafaf9;
+  --bg-gradient-end: #fafaf9;
+
+  --glass-bg: rgba(255, 255, 255, 0.7);
+  --glass-border: rgba(23, 23, 23, 0.05);
+  --glass-shadow: rgba(0, 0, 0, 0.08);
+
+  --glass-card-bg: rgba(255, 255, 255, 0.85);
+  --glass-card-border: rgba(23, 23, 23, 0.04);
+
+  --text-primary: #0c0a09;
+  --text-secondary: #57534e;
+  --text-muted: #78716f;
+
+  --accent-primary: #a3e635; /* Lime */
+  --accent-secondary: #84cc16; /* Lime-600 */
+  --accent-glow: rgba(163, 230, 53, 0.1);
 }
 
 /* Base resets & styles */
 body {
   font-family: var(--font-sans);
-  background: radial-gradient(circle at top, var(--bg-gradient-start), var(--bg-gradient-end));
+  background: linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%);
   background-attachment: fixed;
   color: var(--text-primary);
   min-height: 100vh;
@@ -77,8 +77,34 @@ body {
   overflow-x: hidden;
 }
 
+/* Grid pattern background overlay */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: linear-gradient(to right, rgba(23, 23, 23, 0.04) 1px, transparent 1px);
+  background-size: 140px 100%;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.5;
+}
+
+:root.light body::before {
+  background-image: linear-gradient(to right, rgba(23, 23, 23, 0.02) 1px, transparent 1px);
+}
+
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-heading);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+* {
+  position: relative;
+  z-index: 1;
 }
 
 /* Shimmer styling */

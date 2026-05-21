@@ -1,6 +1,5 @@
 import { BarChart3 } from 'lucide-react';
 
-// Curated colors for popular programming languages
 const LANGUAGE_COLORS = {
   JavaScript: '#f1e05a',
   TypeScript: '#3178c6',
@@ -19,13 +18,12 @@ const LANGUAGE_COLORS = {
   Swift: '#F05138',
   Kotlin: '#A97BFF',
   Dart: '#00B4AB',
-  Unknown: '#64748b'
+  Unknown: '#78716f'
 };
 
 export default function LanguageBreakdown({ repos }) {
   if (!repos || repos.length === 0) return null;
 
-  // Count languages
   const languageCounts = {};
   let totalWithLanguage = 0;
 
@@ -39,20 +37,18 @@ export default function LanguageBreakdown({ repos }) {
 
   if (totalWithLanguage === 0) {
     return (
-      <div className="w-full glass-panel rounded-3xl p-6 md:p-8 animate-[slideUp_0.7s_ease-out] flex flex-col items-center justify-center text-center">
-        <BarChart3 className="w-8 h-8 text-slate-500 mb-2" />
-        <h3 className="text-base font-bold text-slate-300">Language Statistics</h3>
-        <p className="text-xs text-slate-500 mt-1">No language statistics available for these repositories.</p>
+      <div className="w-full rounded-2xl p-8 animate-[slideUp_0.7s_ease-out] flex flex-col items-center justify-center text-center shadow-sm border border-stone-200 dark:border-white/5 bg-stone-50/50 dark:bg-stone-950/30">
+        <BarChart3 className="w-8 h-8 text-stone-400 dark:text-stone-500 mb-3" />
+        <h3 className="text-base font-bold text-stone-700 dark:text-stone-300">Language Statistics</h3>
+        <p className="text-xs text-stone-600 dark:text-stone-400 mt-1">No language statistics available for these repositories.</p>
       </div>
     );
   }
 
-  // Sort and transform languages
   const sortedLanguages = Object.entries(languageCounts)
     .map(([name, count]) => {
       const percentage = ((count / totalWithLanguage) * 100).toFixed(1);
 
-      // Deterministic fallback color (no Math.random in render)
       const fallbackColor = (() => {
         let hash = 0;
         for (let i = 0; i < name.length; i++) {
@@ -70,7 +66,6 @@ export default function LanguageBreakdown({ repos }) {
     })
     .sort((a, b) => b.count - a.count);
 
-  // Take top 4 and group the rest as "Other"
   let mainLanguages = sortedLanguages;
   if (sortedLanguages.length > 5) {
     const top4 = sortedLanguages.slice(0, 4);
@@ -84,20 +79,15 @@ export default function LanguageBreakdown({ repos }) {
         name: 'Other',
         count: otherCount,
         percentage: otherPercentage,
-        color: '#64748b'
+        color: '#78716f'
       }
     ];
   }
 
   return (
-    <div className="w-full glass-panel rounded-3xl p-6 md:p-8 animate-[slideUp_0.7s_ease-out] shadow-xl">
-      <h3 className="text-lg font-bold text-slate-100 flex items-center gap-2 mb-5">
-        <BarChart3 className="w-5 h-5 text-indigo-400" />
-        Most Used Languages
-      </h3>
-
+    <div className="w-full rounded-2xl p-6 md:p-8 animate-[slideUp_0.7s_ease-out] shadow-sm border border-stone-200 dark:border-white/5 bg-stone-50/50 dark:bg-stone-950/30">
       {/* Stacked Percentage Bar */}
-      <div className="w-full h-4 rounded-full flex overflow-hidden bg-slate-800 dark:bg-slate-900 border border-slate-700/50 mb-6">
+      <div className="w-full h-5 rounded-full flex overflow-hidden bg-stone-200 dark:bg-stone-800 border border-stone-300 dark:border-stone-700 mb-6">
         {mainLanguages.map((lang) => (
           <div
             key={lang.name}
@@ -112,19 +102,19 @@ export default function LanguageBreakdown({ repos }) {
       </div>
 
       {/* Legend Grid */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
         {mainLanguages.map((lang) => (
-          <div key={lang.name} className="flex flex-col gap-1.5 p-3 rounded-2xl bg-slate-900/10 dark:bg-slate-100/5 border border-slate-800 dark:border-slate-800/30">
+          <div key={lang.name} className="flex flex-col gap-1.5 p-3 rounded-lg bg-stone-100/50 dark:bg-stone-900/20 border border-stone-200 dark:border-white/5">
             <div className="flex items-center gap-2">
               <span 
                 className="w-3 h-3 rounded-full flex-shrink-0"
                 style={{ backgroundColor: lang.color }}
               />
-              <span className="text-sm font-bold text-slate-200 truncate">{lang.name}</span>
+              <span className="text-xs font-bold text-stone-900 dark:text-stone-50 truncate">{lang.name}</span>
             </div>
             <div className="flex justify-between items-baseline pl-5">
-              <span className="text-xs text-slate-400 font-semibold">{lang.percentage}%</span>
-              <span className="text-[10px] text-slate-500 font-medium">({lang.count} {lang.count === 1 ? 'repo' : 'repos'})</span>
+              <span className="text-[11px] text-stone-700 dark:text-stone-300 font-semibold">{lang.percentage}%</span>
+              <span className="text-[10px] text-stone-600 dark:text-stone-400 font-medium">({lang.count})</span>
             </div>
           </div>
         ))}
